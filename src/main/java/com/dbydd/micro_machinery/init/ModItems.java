@@ -1,44 +1,30 @@
 package com.dbydd.micro_machinery.init;
 
-import java.util.List;
-import java.util.ArrayList;
-
+import com.dbydd.micro_machinery.EnumType.EnumCastType;
 import com.dbydd.micro_machinery.Reference;
 import com.dbydd.micro_machinery.items.ItemBase;
-import com.dbydd.micro_machinery.items.MaterialBase.CrushedOre;
-import com.dbydd.micro_machinery.items.MaterialBase.GearBlank;
-import com.dbydd.micro_machinery.items.MaterialBase.MaterialAxis;
-import com.dbydd.micro_machinery.items.MaterialBase.MaterialCircleCasting;
-import com.dbydd.micro_machinery.items.MaterialBase.MaterialGear;
-import com.dbydd.micro_machinery.items.MaterialBase.MaterialIngot;
-import com.dbydd.micro_machinery.items.MaterialBase.MaterialPlate;
-import com.dbydd.micro_machinery.items.MaterialBase.MaterialDust;
-import com.dbydd.micro_machinery.items.MaterialBase.MaterialRoll;
-import com.dbydd.micro_machinery.items.MaterialBase.MaterialScrew;
-import com.dbydd.micro_machinery.items.MaterialBase.MaterialSlag;
-import com.dbydd.micro_machinery.items.MaterialBase.MaterialStick;
-import com.dbydd.micro_machinery.items.MaterialBase.MaterialString;
-import com.dbydd.micro_machinery.items.MaterialBase.MotorBase;
-import com.dbydd.micro_machinery.items.MaterialBase.OreConcentrate;
+import com.dbydd.micro_machinery.items.ItemCast;
+import com.dbydd.micro_machinery.items.TestItem;
+import com.dbydd.micro_machinery.items.tools.Laser_Drill;
 import com.dbydd.micro_machinery.items.foods.FoodBase;
 import com.dbydd.micro_machinery.items.foods.Golden_Apple_Food;
+import com.dbydd.micro_machinery.items.materialbase.*;
 import com.dbydd.micro_machinery.items.tools.MyMaterial;
 import com.dbydd.micro_machinery.items.tools.ToolAxe;
 import com.dbydd.micro_machinery.items.tools.ToolHammer;
 import com.dbydd.micro_machinery.items.tools.ToolSword;
-
-import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.item.Item;
 import net.minecraft.item.Item.ToolMaterial;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.model.ModelLoader;
-import net.minecraftforge.fml.common.registry.GameRegistry;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ModItems {
 
-	static String materiallist[] = {"Copper", "Tin", "Bronze", "Steel", "Invar", "Stainless_Steel", "Tungsten",
+    private static String[] materiallist = {"Copper", "Tin", "Bronze", "Steel", "Invar", "SS", "Tungsten",
 			"Tungsten_Steel", "HSS", "Gold", "Silver", "Manganese", "Chromium", "Nickel", "Vanadium", "Cobalt",
 			"Titanium", "Aluminum", "NCAlloy", "Silicon", "Graphite", "Iron", "Carbon", "Ferrochrome"};
 
@@ -67,32 +53,33 @@ public class ModItems {
 	public static final Item INGOTGRAPHITE = new MaterialIngot(materiallist[20]);
 
 	//powder
-	public static final Item POWDERCOPPER = new MaterialDust(materiallist[0]);
-	public static final Item POWDERTIN = new MaterialDust(materiallist[1]);
-	public static final Item POWDERBRONZE = new MaterialDust(materiallist[2]);
-	public static final Item POWDERSTEEL = new MaterialDust(materiallist[3]);
-	public static final Item POWDERINVAR = new MaterialDust(materiallist[4]);
-	public static final Item POWDERSS = new MaterialDust(materiallist[5]);
-	public static final Item POWDERTUNGSTEN = new MaterialDust(materiallist[6]);
-	public static final Item POWDERTUNGSTEM_STEEL = new MaterialDust(materiallist[7]);
-	public static final Item POWDERHSS = new MaterialDust(materiallist[8]);
-	public static final Item POWDERGOLD = new MaterialDust(materiallist[9]);
-	public static final Item POWDERSILVER = new MaterialDust(materiallist[10]);
-	public static final Item POWDERMANGANESE = new MaterialDust(materiallist[11]);
-	public static final Item POWDERCHROMIUM = new MaterialDust(materiallist[12]);
-	public static final Item POWDERNICKEL = new MaterialDust(materiallist[13]);
-	public static final Item POWDERVANADIUM = new MaterialDust(materiallist[14]);
-	public static final Item POWDERCOBALT = new MaterialDust(materiallist[15]);
-	public static final Item POWDERTITANIUM = new MaterialDust(materiallist[16]);
-	public static final Item POWDERALUMINUM = new MaterialDust(materiallist[17]);
-	public static final Item POWDERNCALLOY = new MaterialDust(materiallist[18]);
-	public static final Item POWDERSILICON = new MaterialDust(materiallist[19]);
-	public static final Item POWDERIRON = new MaterialDust(materiallist[21]);
-	public static final Item POWDERCARBON = new MaterialDust(materiallist[22]);
-	public static final Item POWDERFERRCHROME = new MaterialDust(materiallist[23]);
+	public static final Item DUSTCOPPER = new MaterialDust(materiallist[0]);
+	public static final Item DUSTTIN = new MaterialDust(materiallist[1]);
+	public static final Item DUSTBRONZE = new MaterialDust(materiallist[2]);
+	public static final Item DUSTSTEEL = new MaterialDust(materiallist[3]);
+	public static final Item DUSTINVAR = new MaterialDust(materiallist[4]);
+	public static final Item DUSTSS = new MaterialDust(materiallist[5]);
+	public static final Item DUSTTUNGSTEN = new MaterialDust(materiallist[6]);
+	public static final Item DUSTTUNGSTEM_STEEL = new MaterialDust(materiallist[7]);
+	public static final Item DUSTHSS = new MaterialDust(materiallist[8]);
+	public static final Item DUSTGOLD = new MaterialDust(materiallist[9]);
+	public static final Item DUSTSILVER = new MaterialDust(materiallist[10]);
+	public static final Item DUSTMANGANESE = new MaterialDust(materiallist[11]);
+	public static final Item DUSTCHROMIUM = new MaterialDust(materiallist[12]);
+	public static final Item DUSTNICKEL = new MaterialDust(materiallist[13]);
+	public static final Item DUSTVANADIUM = new MaterialDust(materiallist[14]);
+	public static final Item DUSTCOBALT = new MaterialDust(materiallist[15]);
+	public static final Item DUSTTITANIUM = new MaterialDust(materiallist[16]);
+	public static final Item DUSTALUMINUM = new MaterialDust(materiallist[17]);
+	public static final Item DUSTNCALLOY = new MaterialDust(materiallist[18]);
+	public static final Item DUSTSILICON = new MaterialDust(materiallist[19]);
+	public static final Item DUSTIRON = new MaterialDust(materiallist[21]);
+	public static final Item DUSTCARBON = new MaterialDust(materiallist[22]);
+	public static final Item DUSTFERRCHROME = new MaterialDust(materiallist[23]);
 
 	//stick
 	public static final Item STICKCOPPER = new MaterialStick(materiallist[0]);
+	public static final Item STICKTIN = new MaterialStick(materiallist[1]);
 	public static final Item STICKBRONZE = new MaterialStick(materiallist[2]);
 	public static final Item STICKSTEEL = new MaterialStick(materiallist[3]);
 	public static final Item STICKINVAR = new MaterialStick(materiallist[4]);
@@ -210,7 +197,7 @@ public class ModItems {
 	public static final Item HSSADDITIVE = new ItemBase("HSSAdditive");
 	public static final Item SSADDITIVE = new ItemBase("SSAdditive");
 
-	//crushedore
+	//crushed ore
 	public static final Item CRUSHEDCOPPER = new CrushedOre("Copper");
 	public static final Item CRUSHEDTIN = new CrushedOre("Tin");
 	public static final Item CRUSHEDILMENITE = new CrushedOre("Ilmenite");
@@ -255,15 +242,15 @@ public class ModItems {
 	public static final Item APPLE_JAM_BUN = new FoodBase(10, 10.0f, "apple_jam_bun");
 
 	//tools
-	//axe
+    //axe
 	public static final Item AXEBRONZE = new ToolAxe(ToolMaterial.IRON, 300, "bronze_axe", 6.0f, 7.0f);
 	public static final Item AXETUNGSTEN_STEEL = new ToolAxe(ToolMaterial.DIAMOND, 1200, "tungsten_steel_axe", 7.0f, 12.0f);
 	public static final Item AXEHSS = new ToolAxe(ToolMaterial.DIAMOND, 800, "hss_axe", 12.0f, 15.0f);
-	//sword
-	public static final Item BONZE_SWORD = new ToolSword(MyMaterial.BRONZE, 250, "bronze_sword");
+    //sword
+	public static final Item BRONZE_SWORD = new ToolSword(MyMaterial.BRONZE, 250, "bronze_sword");
 	public static final Item TUNGSTEN_STEEL_SWORD = new ToolSword(MyMaterial.TUNGSTEN_STEEL, 1000, "tungsten_steel_sword");
 	public static final Item HSS_SWORD = new ToolSword(MyMaterial.HSS, 750, "hss_sword");
-	//hammer
+    //hammer
 	public static final Item STONE_HAMMER = new ToolHammer(ToolMaterial.STONE, 100, "stone_hammer");
 	public static final Item IRON_HAMMER = new ToolHammer(ToolMaterial.IRON, 700, "iron_hammer");
 	public static final Item BRONZE_HAMMER = new ToolHammer(MyMaterial.BRONZE, 400, "bronze_hammer");
@@ -285,7 +272,17 @@ public class ModItems {
 	public static final Item HSB = new ItemBase("hsb");
 	public static final Item BRICK_POWDER = new ItemBase("brick_powder");
 	public static final Item CLAY_MIXED_WITH_CLINKER = new ItemBase("clay_mixed_with_clinker");
+	public static final Item BRONZE_SWORD0 = new ItemBase("bronze_sword0");
 
+	//casts
+	public static final Item CAST_INGOT = new ItemCast("cast_ingot", 160, EnumCastType.INGOT);
+	public static final Item CAST_STICK = new ItemCast("cast_stick", 72, EnumCastType.STICK);
+	public static final Item CAST_GEAR = new ItemCast("cast_gear", 584, EnumCastType.GEAR);
+	public static final Item CAST_SWORD = new ItemCast("cast_sword", 288, EnumCastType.SWORD);
+
+	//testtool
+	public static final Item LASER_DRILL = new Laser_Drill();
+	public static final Item TESTStick = new TestItem("testItem");
 
 	/*==========================================================================================================================================================================*/
 	public static void registerRenderItem(Item item) {

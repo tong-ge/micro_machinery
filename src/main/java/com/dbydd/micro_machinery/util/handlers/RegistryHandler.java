@@ -1,14 +1,28 @@
 package com.dbydd.micro_machinery.util.handlers;
 
 import com.dbydd.micro_machinery.Micro_Machinery;
+import com.dbydd.micro_machinery.Reference;
+import com.dbydd.micro_machinery.blocks.tileentities.TESRTestTile;
+import com.dbydd.micro_machinery.blocks.tileentities.TileEntityEnergyCableWithoutGenerateForce;
+import com.dbydd.micro_machinery.blocks.tileentities.TileEntityTickableEnergyCableWithoutGenerateForce;
+import com.dbydd.micro_machinery.blocks.tileentities.TileEntityHandGenerator;
 import com.dbydd.micro_machinery.init.ModBlocks;
 import com.dbydd.micro_machinery.init.ModFluids;
+import com.dbydd.micro_machinery.init.ModGenerators;
 import com.dbydd.micro_machinery.init.ModItems;
+import com.dbydd.micro_machinery.renderer.TesrRender;
+import com.dbydd.micro_machinery.renderer.TileEntityHandGeneratorRender;
+import com.dbydd.micro_machinery.renderer.TileentityCableSpecialRenderer;
 import com.dbydd.micro_machinery.util.IHasModel;
+import com.dbydd.micro_machinery.worldgen.*;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
+import net.minecraft.world.gen.feature.WorldGenerator;
 import net.minecraftforge.client.event.ModelRegistryEvent;
+import net.minecraftforge.client.model.obj.OBJLoader;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
@@ -36,6 +50,7 @@ public class RegistryHandler {
 
     @SubscribeEvent
     public static void onModelRegister(ModelRegistryEvent event) {
+        OBJLoader.INSTANCE.addDomain(Reference.MODID);
 
         for (Item item : ModItems.ITEMS) {
             if (item instanceof IHasModel) {
@@ -43,13 +58,17 @@ public class RegistryHandler {
             }
         }
 
-
         for (Block block : ModBlocks.BLOCKS) {
             if (block instanceof IHasModel) {
                 ((IHasModel) block).registerModels();
             }
         }
 
+        ClientRegistry.bindTileEntitySpecialRenderer(TileEntityTickableEnergyCableWithoutGenerateForce.class, new TileentityCableSpecialRenderer<TileEntityTickableEnergyCableWithoutGenerateForce>());
+        ClientRegistry.bindTileEntitySpecialRenderer(TileEntityEnergyCableWithoutGenerateForce.class, new TileentityCableSpecialRenderer<TileEntityEnergyCableWithoutGenerateForce>());
+        ClientRegistry.bindTileEntitySpecialRenderer(TESRTestTile.class, new TesrRender());
+        ClientRegistry.bindTileEntitySpecialRenderer(TileEntityHandGenerator.class, new TileEntityHandGeneratorRender());
+//        ClientRegistry.bindTileEntitySpecialRenderer(TESRTestTile.class, new FastTesrRender());
     }
 
     public static void preInitRegisteries(FMLPreInitializationEvent event) {
@@ -80,6 +99,24 @@ public class RegistryHandler {
 
     public static void initRegistries(FMLInitializationEvent event) {
         NetworkRegistry.INSTANCE.registerGuiHandler(Micro_Machinery.instance, new GUIHandler());
+
+        MinecraftForge.ORE_GEN_BUS.register(DisabledOres.class);
+        ModGenerators.initMaps();
+
+        for (WorldGenerator generator : ModGenerators.worldGenerators) {
+            new WorldGeneratorLoader(generator);
+        }
+        for (SpecialGenerator generator : ModGenerators.worldSpecialGenerators) {
+            new SpecialGeneratorLoader(generator);
+        }
+
+        for(VeinGenerator generator : ModGenerators.worldVeinGenerators){
+            new VeinGeneratorLoader(generator);
+        }
+
+        for(EndVeinGenerator generator: ModGenerators.endVeinGenerators){
+            new EndVeinGeneratorLoader(generator);
+        }
     }
 
     public static void postInitRegistries(FMLPostInitializationEvent event) {

@@ -22,7 +22,9 @@ import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
@@ -36,6 +38,8 @@ public class BlockKlin extends BlockContainer implements IHasModel {
 
     private static final PropertyDirection FACING = BlockHorizontal.FACING;
     private static final PropertyBool BURNING = PropertyBool.create("burning");
+    public static final AxisAlignedBB HIGHER_THAN_FULL_BLOCK_AABB = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 1.0D, 1.25D,
+            1.0D);
 
     public BlockKlin(String name, Material material) {
         super(material);
@@ -43,6 +47,7 @@ public class BlockKlin extends BlockContainer implements IHasModel {
         setUnlocalizedName(name);
         setRegistryName(name);
         setCreativeTab(Micro_Machinery.Micro_Machinery);
+        setHardness(3.0f);
         ModBlocks.BLOCKS.add(this);
         ModItems.ITEMS.add(new ItemBlock(this).setRegistryName(Objects.requireNonNull(this.getRegistryName())));
         this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH).withProperty(BURNING, false));
@@ -66,6 +71,17 @@ public class BlockKlin extends BlockContainer implements IHasModel {
     @Override
     public boolean isOpaqueCube(IBlockState state) {
         return false;
+    }
+
+    @Override
+    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
+        return HIGHER_THAN_FULL_BLOCK_AABB;
+    }
+
+    @Override
+    public AxisAlignedBB getSelectedBoundingBox(IBlockState state, World worldIn, BlockPos pos) {
+        //return super.getSelectedBoundingBox(state, worldIn, pos);
+        return HIGHER_THAN_FULL_BLOCK_AABB;
     }
 
     @Override
@@ -115,6 +131,11 @@ public class BlockKlin extends BlockContainer implements IHasModel {
     }
 
     @Override
+    public boolean isFullCube(IBlockState state) {
+        return false;
+    }
+
+    @Override
     public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer, EnumHand hand) {
         return this.getDefaultState().withProperty(FACING, placer.getHorizontalFacing().getOpposite());
     }
@@ -158,7 +179,7 @@ public class BlockKlin extends BlockContainer implements IHasModel {
 
     @Override
     public void registerModels() {
-        Micro_Machinery.proxy.registerItemRenderer(Item.getItemFromBlock(this), 0, "invenroty");
+        Micro_Machinery.proxy.registerItemRenderer(Item.getItemFromBlock(this), 0, "inventory");
     }
 
     @Nullable

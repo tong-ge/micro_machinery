@@ -1,8 +1,9 @@
 package com.dbydd.micro_machinery.blocks.tileentities;
 
 import com.dbydd.micro_machinery.blocks.machine.BlockKlin;
-import com.dbydd.micro_machinery.recipes.KlinRecipe;
 import com.dbydd.micro_machinery.recipes.RecipeHelper;
+import com.dbydd.micro_machinery.recipes.klin.KlinFluidRecipe;
+import com.dbydd.micro_machinery.recipes.klin.KlinRecipe;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -24,8 +25,6 @@ import net.minecraftforge.fluids.FluidTank;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidTankProperties;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
@@ -36,35 +35,20 @@ import javax.annotation.Nullable;
 public class TileEntityKlin extends TileEntity implements IItemHandler, IFluidHandler, ITickable {
 
 
-    public FluidTank fluidhandler = new FluidTank(2000) {
-        @Override
-        public boolean canFillFluidType(FluidStack fluid) {
-            if (getFluid() == null && getCapacity() > fluid.amount) {
-                return true;
-            }
-
-            if (getFluid().getFluid() == fluid.getFluid() && (getCapacity() - getFluidAmount()) > fluid.amount) {
-                return true;
-            }
-
-            return false;
-        }
-    };
+    private FluidTank fluidhandler = new FluidTank(2000);
     private FluidStack result = null;
+    private KlinFluidRecipe recipe = null;
     private int melttime = 0;
     private int currentmelttime = 0;
-    private int burntime = -1;
+    private int burntime = 0;
     private int maxburntime = 0;
     private ItemStackHandler itemhandler = new ItemStackHandler(5);
+    private int pouringcooldown = 0;
+    private int currentcooldown = 0;
+    private boolean isBurning = false;
 
-    @SideOnly(Side.CLIENT)
-    public static boolean isBurning(TileEntityKlin te) {
-        return te.getField(2) > 0;
-    }
-
-    @SideOnly(Side.CLIENT)
-    public static boolean isSmelting(TileEntityKlin te) {
-        return te.getField(1) != 0 && te.getField(0) != 0;
+    public FluidTank getFluidhandler() {
+        return fluidhandler;
     }
 
     public FluidStack getResult() {
@@ -73,26 +57,29 @@ public class TileEntityKlin extends TileEntity implements IItemHandler, IFluidHa
 
     @Override
     public void readFromNBT(NBTTagCompound compound) {
+        isBurning = compound.getBoolean("isBurning");
+        itemhandler.deserializeNBT(compound.getCompoundTag("Inventory"));
+        melttime = compound.getInteger("melt time needed");
+        currentmelttime = compound.getInteger("current melt time");
+        burntime = compound.getInteger("burntime");
+        maxburntime = compound.getInteger("maxburntime");
+        pouringcooldown = compound.getInteger("pouringcooldown");
+        currentcooldown = compound.getInteger("currentcooldown");
+        fluidhandler = fluidhandler.readFromNBT(compound);
         super.readFromNBT(compound);
-        this.itemhandler.deserializeNBT(compound.getCompoundTag("Inventory"));
-        this.melttime = compound.getInteger("melt time needed");
-        this.currentmelttime = compound.getInteger("current melt time");
-        this.burntime = compound.getInteger("burntime");
-        this.maxburntime = compound.getInteger("maxburntime");
-        this.fluidhandler.readFromNBT(compound);
     }
 
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
-        super.writeToNBT(compound);
         compound.setInteger("melt time needed", melttime);
         compound.setInteger("current melt time", currentmelttime);
         compound.setInteger("burntime", burntime);
         compound.setInteger("maxburntime", maxburntime);
-        compound.setTag("Inventory", this.itemhandler.serializeNBT());
-        fluidhandler.writeToNBT(compound);
-
-        return compound;
+        compound.setTag("Inventory", itemhandler.serializeNBT());
+        compound.setInteger("pouringcooldown", pouringcooldown);
+        compound.setInteger("currentcooldown", currentcooldown);
+        compound.setBoolean("isBurning", isBurning);
+        return super.writeToNBT(fluidhandler.writeToNBT(compound));
     }
 
     @Override
@@ -109,11 +96,11 @@ public class TileEntityKlin extends TileEntity implements IItemHandler, IFluidHa
     }
 
     public boolean isBurning() {
-        return this.burntime >= 0 && maxburntime != 0;
+        return isBurning;
     }
 
     public boolean issmelting() {
-        return getResult() != null && melttime != 0 && isBurning();
+        return getResult() != null && melttime != 0 && isBurning;
     }
 
     @Override
@@ -169,42 +156,83 @@ public class TileEntityKlin extends TileEntity implements IItemHandler, IFluidHa
     @Override
     public void update() {
         if (!world.isRemote) {
-            if (isBurning()) {
-                ++this.burntime;
-                BlockKlin.setState(true, world, this.getPos());
+            if (isBurning) {
+                this.burntime++;
                 if (issmelting()) {
-                    ++currentmelttime;
+                    currentmelttime++;
                     if (currentmelttime >= melttime) {
                         if (fluidhandler.canFillFluidType(result)) {
                             this.fluidhandler.fill(result, true);
                             result = null;
                             currentmelttime = 0;
+                            markDirty();
+                            this.syncToTrackingClients();
                         } else {
-                            --currentmelttime;
+                            currentmelttime--;
+                            markDirty();
+                            this.syncToTrackingClients();
                         }
+                        markDirty();
+                        this.syncToTrackingClients();
                     }
                 } else {
                     KlinRecipe recipeinsmelting = tryToGetRecipe();
-                    if (recipeinsmelting != null) {
+                    if (recipeinsmelting != null && fluidhandler.fill(recipeinsmelting.outputfluidstack, false) == recipeinsmelting.outputfluidstack.amount) {
                         this.result = recipeinsmelting.outputfluidstack;
                         this.melttime = recipeinsmelting.melttime;
                         extractMaterial(recipeinsmelting);
+                        markDirty();
+                        this.syncToTrackingClients();
                     }
                 }
                 if (burntime >= maxburntime) {
-                    burntime = -1;
+                    burntime = 0;
                     maxburntime = 0;
+                    isBurning = false;
+                    BlockKlin.setState(isBurning, world, this.getPos());
+                    markDirty();
+                    this.syncToTrackingClients();
                 }
-                markDirty();
             } else {
                 if (tryToGetRecipe() != null)
                     tryToGetFuel(this.itemhandler, 2);
                 markDirty();
+                this.syncToTrackingClients();
             }
-            this.syncToTrackingClients();
-        }
 
+            if (recipe == null) {
+                if (fluidhandler.getFluidAmount() != 0 && getStackInSlot(4) != ItemStack.EMPTY) {
+                    recipe = RecipeHelper.GetKlinFluidRecipe(this.fluidhandler.getFluid(), getStackInSlot(4));
+                    if (recipe != null) pouringcooldown = recipe.cooldown;
+                    markDirty();
+                    this.syncToTrackingClients();
+                }
+            } else if (currentcooldown < pouringcooldown) {
+                currentcooldown++;
+                markDirty();
+                this.syncToTrackingClients();
+            } else {
+                if (RecipeHelper.canInsert(getStackInSlot(3), recipe.output)) {
+                    insertResult(3, recipe.output);
+                    fluidhandler.drain(recipe.cast.amount, true);
+                    currentcooldown = 0;
+                    pouringcooldown = 0;
+                    recipe = null;
+                    markDirty();
+                    this.syncToTrackingClients();
+                } else {
+                    currentcooldown--;
+                    markDirty();
+                    this.syncToTrackingClients();
+                }
+            }
+        }
     }
+
+    private void insertResult(int slot, ItemStack output) {
+        itemhandler.setStackInSlot(slot, new ItemStack(output.getItem(), getStackInSlot(slot).getCount() + output.getCount()));
+    }
+
 
     private void extractMaterial(KlinRecipe recipeinsmelting) {
         if (itemhandler.getStackInSlot(0).getItem() == recipeinsmelting.input1.getItem()) {
@@ -221,11 +249,12 @@ public class TileEntityKlin extends TileEntity implements IItemHandler, IFluidHa
     }
 
     private void tryToGetFuel(ItemStackHandler handler, int index) {
-        if (handler.getStackInSlot(index) != null) {
+        if (handler.getStackInSlot(index) != ItemStack.EMPTY) {
             maxburntime = TileEntityFurnace.getItemBurnTime(handler.getStackInSlot(index));
             if (maxburntime != 0) {
-                burntime = 0;
                 handler.extractItem(index, 1, false);
+                isBurning = true;
+                BlockKlin.setState(isBurning, world, this.getPos());
             }
         }
     }
@@ -236,7 +265,7 @@ public class TileEntityKlin extends TileEntity implements IItemHandler, IFluidHa
 
     @Override
     public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newState) {
-        return oldState.getBlock() != newState.getBlock();
+        return oldState.getBlock() != newState.getBlock() && super.shouldRefresh(world, pos, oldState, newState);
     }
 
     public int getField(int id) {
@@ -264,6 +293,8 @@ public class TileEntityKlin extends TileEntity implements IItemHandler, IFluidHa
                 break;
             case 2:
                 this.burntime = value;
+//            case 3:
+//                this.maxburntime = value;
                 break;
         }
     }
@@ -274,18 +305,15 @@ public class TileEntityKlin extends TileEntity implements IItemHandler, IFluidHa
 
     @Override
     public SPacketUpdateTileEntity getUpdatePacket() {
-        NBTTagCompound nbtTag = this.fluidhandler.writeToNBT(new NBTTagCompound());
-        writeToNBT(nbtTag);
-        //Write your data into the nbtTag
+        NBTTagCompound nbtTag = new NBTTagCompound();
+        nbtTag = this.writeToNBT(nbtTag);
         return new SPacketUpdateTileEntity(getPos(), 1, nbtTag);
     }
 
     @Override
     public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
         NBTTagCompound tag = pkt.getNbtCompound();
-        readFromNBT(tag);
-        //Handle your Data
-        this.fluidhandler.readFromNBT(tag);
+        this.readFromNBT(tag);
     }
 
     protected final void syncToTrackingClients() {

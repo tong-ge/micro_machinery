@@ -1,9 +1,15 @@
 package com.dbydd.micro_machinery.util.handlers;
 
 import com.dbydd.micro_machinery.Reference;
+import com.dbydd.micro_machinery.blocks.tileentities.TileEntityFireGenerator;
+import com.dbydd.micro_machinery.blocks.tileentities.TileEntityForgingAnvil;
 import com.dbydd.micro_machinery.blocks.tileentities.TileEntityKlin;
-import com.dbydd.micro_machinery.gui.Klin.ContainerElementaryKlin;
-import com.dbydd.micro_machinery.gui.Klin.GuiElementaryKlin;
+import com.dbydd.micro_machinery.gui.firegenerator.ContainerFireGenerator;
+import com.dbydd.micro_machinery.gui.firegenerator.GuiFireGenerator;
+import com.dbydd.micro_machinery.gui.forginganvil.ContainerForgingAnvil;
+import com.dbydd.micro_machinery.gui.forginganvil.GuiForgingAnvil;
+import com.dbydd.micro_machinery.gui.klin.ContainerKlin;
+import com.dbydd.micro_machinery.gui.klin.GuiKlin;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -13,43 +19,27 @@ import javax.annotation.Nullable;
 
 public class GUIHandler implements IGuiHandler {
 
-    /**
-     * Returns a Server side Container to be displayed to the user.
-     *
-     * @param ID     The Gui ID Number
-     * @param player The player viewing the Gui
-     * @param world  The current world
-     * @param x      X Position
-     * @param y      Y Position
-     * @param z      Z Position
-     * @return A GuiScreen/Container to be displayed to the user, null if none.
-     */
     @Nullable
     @Override
     public Object getServerGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
         if (ID == Reference.GUI_Klin)
-            return new ContainerElementaryKlin(player, (TileEntityKlin) world.getTileEntity(new BlockPos(x, y, z)));
+            return new ContainerKlin(player, (TileEntityKlin) world.getTileEntity(new BlockPos(x, y, z)));
+        if (ID == Reference.GUI_ForgingAnvil)
+            return new ContainerForgingAnvil(player, (TileEntityForgingAnvil) world.getTileEntity(new BlockPos(x, y, z)));
+        if (ID == Reference.GUI_FireGenerator)
+            return new ContainerFireGenerator(player, (TileEntityFireGenerator)world.getTileEntity(new BlockPos(x,y,z)));
         return null;
     }
 
-    /**
-     * Returns a Container to be displayed to the user. On the client side, this
-     * needs to return a instance of GuiScreen On the server side, this needs to
-     * return a instance of Container
-     *
-     * @param ID     The Gui ID Number
-     * @param player The player viewing the Gui
-     * @param world  The current world
-     * @param x      X Position
-     * @param y      Y Position
-     * @param z      Z Position
-     * @return A GuiScreen/Container to be displayed to the user, null if none.
-     */
     @Nullable
     @Override
     public Object getClientGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
         if (ID == Reference.GUI_Klin)
-            return new GuiElementaryKlin(player, (TileEntityKlin) world.getTileEntity(new BlockPos(x, y, z)));
+            return new GuiKlin(player, (TileEntityKlin) world.getTileEntity(new BlockPos(x, y, z)));
+        if (ID == Reference.GUI_ForgingAnvil)
+            return new GuiForgingAnvil(player, (TileEntityForgingAnvil) world.getTileEntity(new BlockPos(x, y, z)));
+        if (ID == Reference.GUI_FireGenerator)
+            return new GuiFireGenerator(player, (TileEntityFireGenerator)world.getTileEntity(new BlockPos(x,y,z)));
         return null;
     }
 }

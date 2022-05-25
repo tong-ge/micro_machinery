@@ -1,18 +1,12 @@
 package com.dbydd.micro_machinery.init;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.dbydd.micro_machinery.blocks.BlockBase;
-import com.dbydd.micro_machinery.blocks.BlockFluid;
-import com.dbydd.micro_machinery.blocks.BlockOres;
-import com.dbydd.micro_machinery.blocks.MaterialBlock;
-import com.dbydd.micro_machinery.blocks.OreEnd;
-import com.dbydd.micro_machinery.blocks.OreNether;
-import com.dbydd.micro_machinery.blocks.machine.BlockKlin;
-
+import com.dbydd.micro_machinery.blocks.*;
+import com.dbydd.micro_machinery.blocks.machine.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ModBlocks {
 
@@ -47,7 +41,7 @@ public class ModBlocks {
     public static final Block BLOCKTIN = new MaterialBlock("Tin", 1, 2.5f);
     public static final Block BLOCKBRONZE = new MaterialBlock("Bronze", 2, 4.5f);
     public static final Block BLOCKSTEEL = new MaterialBlock("Steel", 2, 3.5f);
-    public static final Block BLOCKSS = new MaterialBlock("Stainless_Steel", 3, 5.0f);
+    public static final Block BLOCKSS = new MaterialBlock("SS", 3, 5.0f);
     public static final Block BLOCKTUNGSTEN = new MaterialBlock("Tungsten", 3, 7.0f);
     public static final Block BLOCKNICKEL = new MaterialBlock("Nickel", 2, 3.5f);
     public static final Block BLOCKTUNGSTEN_STEEL = new MaterialBlock("Tungsten_Steel", 3, 7.0f);
@@ -100,4 +94,14 @@ public class ModBlocks {
     //tileentities
     //machine
     public static final Block KLIN = new BlockKlin("klin", Material.IRON);
+    public static final Block STONE_ANVIL = new BlockForgingAnvil("stone_anvil", 1);
+    public static final Block BRONZE_ANVIL = new BlockForgingAnvil("bronze_anvil", 2);
+    public static final Block PIGIRON_ANVIL = new BlockForgingAnvil("pigiron_anvil", 3);
+    public static final Block FIREGENERATOR = new FireGenerator();
+
+    public static final Block TICKABLEENERGYCABLEWITHOUTGENERATEFORCE = new BlockTickableEnergyCableWithoutGenerateForce("tickableenergycablewithoutgenerateforce",Material.IRON, 25600);
+    public static final Block ENERGYCABLEWITHOUTGENERATEFORCE = new BlockEnergyCableWithoutGenerateForce("energycablewithoutgenerateforce",Material.IRON, 25600);
+    public static final Block CABLE_HEAD = new Cable_Heads("cable_head");
+    public static final Block HAND_GENERATOR = new BlockHandGenerator();
+    public static final Block HAND_GENERATOR_HANDLE = new BlockWithFacing("hand_generator_handle", Material.AIR).setCreativeTab(null);
 }
